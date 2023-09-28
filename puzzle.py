@@ -106,9 +106,21 @@ def dfs_search(initial_state):
     pass
 
 def A_star_search(initial_state):
-    """A * search"""
-    ### STUDENT CODE GOES HERE ###
-    pass
+    frontier = Q.PriorityQueue(initial_state)
+    explored = set()
+    while not frontier.empty():
+        cost, state = frontier.get()
+        explored.add(state)
+        if self.test_goal(state):
+            return True
+        for neighbor in state.neighbors:
+            if neighbor not in explored and neighbor not in frontier:
+                # duplicates will be distinguished by cost
+                # we ignore duplicates once we explored our designated
+                # min cost representation.
+                frontier.put((calculate_total_cost(neighbor), neighbor))
+    return False
+        
 
 def calculate_total_cost(state):
     """calculate the total estimated cost of a state"""
