@@ -47,7 +47,21 @@ class PuzzleState(object):
         Moves the blank tile one row up.
         :return a PuzzleState with the new configuration
         """
-        pass
+        blank_tile_index = 0
+        try:
+            blank_tile_index = self.config.index(0)
+        except ValueError as error:
+            print(f"Bad puzzle configuration. Unable to find blank tile: {error}")
+            return
+        
+        new_config = self.config.copy()
+        if blank_tile_index < 3:
+            print("Unable to move up when blank tile in first row.")
+            return
+        else:
+            new_blank_tile_index = blank_tile_index - 3
+            new_config[blank_tile_index], new_config[new_blank_tile_index] = new_config[new_blank_tile_index], new_config[blank_tile_index]
+            return 
       
     def move_down(self):
         """
@@ -106,7 +120,7 @@ def dfs_search(initial_state):
     pass
 
 def A_star_search(initial_state):
-    frontier = Q.PriorityQueue(initial_state)
+    frontier = Q.PriorityQueue((0, initial_state))
     explored = set()
     while not frontier.empty():
         cost, state = frontier.get()
