@@ -61,7 +61,7 @@ class PuzzleState(object):
         else:
             new_blank_tile_index = blank_tile_index - 3
             new_config[blank_tile_index], new_config[new_blank_tile_index] = new_config[new_blank_tile_index], new_config[blank_tile_index]
-            return 
+            return PuzzleState(new_config, self.n, self, "Move Up") # consider the cost later once implement that function
       
     def move_down(self):
         """
