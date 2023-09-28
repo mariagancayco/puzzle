@@ -146,7 +146,7 @@ def calculate_manhattan_dist(idx, value, n):
     ### STUDENT CODE GOES HERE ###
     pass
 
-def test_goal(puzzle_state) -> Bool:
+def test_goal(puzzle_state) -> bool:
     return puzzle_state == [0,1,2,3,4,5,6,7,8]
 
 # Main Function that reads in Input and Runs corresponding Algorithm
