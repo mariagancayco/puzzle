@@ -110,7 +110,21 @@ class PuzzleState(object):
         Moves the blank tile one column to the right.
         :return a PuzzleState with the new configuration
         """
-        pass
+        blank_tile_index = 0
+        try:
+            blank_tile_index = self.config.index(0)
+        except ValueError as error:
+            print(f"Bad puzzle configuration. Unable to find blank tile: {error}")
+            return
+        
+        new_config = self.config.copy()
+        if blank_tile_index % 3 == 2:
+            print("Unable to move right when blank tile in rightmost row.")
+            return
+        else:
+            new_blank_tile_index = blank_tile_index + 1
+            new_config[blank_tile_index], new_config[new_blank_tile_index] = new_config[new_blank_tile_index], new_config[blank_tile_index]
+            return PuzzleState(new_config, self.n, self, "Move Down") # consider the cost later once implement that function
       
     def expand(self):
         """ Generate the child nodes of this node """
@@ -166,13 +180,30 @@ def A_star_search(initial_state):
 
 def calculate_total_cost(state):
     """calculate the total estimated cost of a state"""
-    ### STUDENT CODE GOES HERE ###
+    cost_so_far = state[0]
+    curr_state = state[1]
+    #manhattan_dist = calculate_manhattan_dist()
     pass
 
-def calculate_manhattan_dist(idx, value, n):
+def calculate_manhattan_dist(idx, value, n): # n isn't used in my implementation, but keeping it to avoid breaking autograder
     """calculate the manhattan distance of a tile"""
-    ### STUDENT CODE GOES HERE ###
-    pass
+    true_locs = {0: (0, 0), 1: (0, 1), 2: (0, 2), 
+                      3: (1, 0), 4: (1, 1), 5: (1, 2),
+                      6: (2, 0), 7: (2, 1), 8: (2, 2)}
+
+    # calculate horizontal distance
+    true_col = true_locs[value][1]
+    curr_col = idx % 3
+    horizontal_dist = abs(true_col-curr_col)
+    
+    # calculate vertical distance
+    true_row = true_locs[value][0]
+    curr_row = 0
+    if 2 < idx < 6: curr_row = 1
+    if 5 < idx: curr_row = 2
+    vertical_dist = abs(true_row-curr_row)
+    
+    return horizontal_dist+vertical_dist
 
 def test_goal(puzzle_state) -> bool:
     return puzzle_state == [0,1,2,3,4,5,6,7,8]
