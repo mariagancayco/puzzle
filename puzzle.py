@@ -149,11 +149,13 @@ class PuzzleState(object):
 ### Students need to change the method to have the corresponding parameters
 def writeOutput(path_to_goal, cost_of_path, nodes_expanded, search_depth, 
                 max_search_depth, running_time, max_ram_usage):
-    file = open("output.txt", "a")
-    file.write(f'''path_to_goal: {path_to_goal}\n cost_of_path: {cost_of_path}\n
+    file = open("/tmp/output.txt", "a")
+    result_string = f'''path_to_goal: {path_to_goal}\n cost_of_path: {cost_of_path}\n
                    nodes_expanded: {nodes_expanded}\n search_depth: {search_depth}\n
                    max_search_depth: {max_search_depth}\n running_time: {running_time}\n
-                   max_ram_usage: {max_ram_usage}''')
+                   max_ram_usage: {max_ram_usage}'''
+    file.write(result_string)
+    print(result_string)
     file.close()
     
 def bfs_search(initial_state):
@@ -167,33 +169,42 @@ def dfs_search(initial_state):
     pass
 
 def A_star_search(initial_state):
-    frontier = Q.PriorityQueue((0, initial_state))
+    frontier = Q.PriorityQueue()
+    """
+    According to the Python doc priority queue implementation, items with the same priority in a Tuple break comparison.
+    Resolve this via the recommended solution which is to store an entry "count" item. Fall back to this to break priority
+    ties.
+    """
+    count = 0
+    frontier.put((0, count, initial_state))
     explored = set()
     nodes_expanded, max_search_depth = 0, 0
     while not frontier.empty():
-        cost, state = frontier.get()
+        state_info = frontier.get()
+        state = state_info[2]
         explored.add(state)
+
         if test_goal(state):
             path_to_goal, search_depth = calculate_path_to_goal_and_search_depth(state)
             end_time = time.time()
             return {'path': path_to_goal, 'path_cost': state.cost, 'nodes_expanded':
                     nodes_expanded, 'depth': search_depth, 'max_depth': max_search_depth}
-            return True
-        neighbors = state.expand()
-        for neighbor in neighbors:
-            if neighbor not in explored and neighbor not in frontier:
+        children = state.expand()
+        for child in children:
+            if child not in explored:
                 nodes_expanded += 1
                 # duplicates will be distinguished by estimated cost
                 # we ignore duplicates once we explored our designated
                 # min cost representation.
-                estimated_total_cost = calculate_total_cost(neighbor)
-                frontier.put((estimated_total_cost, neighbor))
+                estimated_total_cost = calculate_total_cost(child)
+                count += 1
+                frontier.put((estimated_total_cost, count, child))
         max_search_depth += 1 #make sure can test all of these in unit tests- or at least manually if too complicated
     return None
 
 def calculate_total_cost(state):
     total_manhattan_dist = 0
-    for index, value in enumerate(state):
+    for index, value in enumerate(state.config):
         tile_dist = calculate_manhattan_dist(index, value, None)
         total_manhattan_dist += tile_dist
     return state.cost + total_manhattan_dist
@@ -218,13 +229,14 @@ def calculate_manhattan_dist(idx, value, n): # n isn't used in my implementation
     return horizontal_dist+vertical_dist
 
 def test_goal(puzzle_state) -> bool:
-    return puzzle_state == [0,1,2,3,4,5,6,7,8]
+    return puzzle_state.config == [0,1,2,3,4,5,6,7,8]
 
 
 def calculate_path_to_goal_and_search_depth(state):
     curr_state = state
     path, search_depth = [], 0
     while curr_state.parent:
+        search_depth += 1
         path.append(curr_state.action)
         curr_state = curr_state.parent
     path.reverse()
@@ -244,8 +256,9 @@ def main():
     elif search_mode == "dfs": dfs_search(hard_state)
     elif search_mode == "ast": 
         result_info = A_star_search(hard_state)
+        if not result_info: return #figure out how to handle empty case- should just be the empty config? No solution vs. handed goal state?
         end_time = time.time()
-        max_RAM = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        max_RAM = getrusage(RUSAGE_SELF).ru_maxrss
         writeOutput(result_info['path'], result_info['path_cost'], result_info['nodes_expanded'],
                     result_info['depth'], result_info['max_depth'], end_time-start_time, max_RAM)
     else: 
