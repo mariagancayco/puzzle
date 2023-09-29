@@ -1,5 +1,6 @@
 from __future__ import division
 from __future__ import print_function
+from resource import getrusage, RUSAGE_SELF
 
 import sys
 import math
@@ -61,7 +62,7 @@ class PuzzleState(object):
         else:
             new_blank_tile_index = blank_tile_index - 3
             new_config[blank_tile_index], new_config[new_blank_tile_index] = new_config[new_blank_tile_index], new_config[blank_tile_index]
-            return PuzzleState(new_config, self.n, self, "Move Up") # consider the cost later once implement that function
+            return PuzzleState(new_config, self.n, self, "Up") # consider the cost later once implement that function
       
     def move_down(self):
         """
@@ -82,7 +83,7 @@ class PuzzleState(object):
         else:
             new_blank_tile_index = blank_tile_index + 3
             new_config[blank_tile_index], new_config[new_blank_tile_index] = new_config[new_blank_tile_index], new_config[blank_tile_index]
-            return PuzzleState(new_config, self.n, self, "Move Down") # consider the cost later once implement that function
+            return PuzzleState(new_config, self.n, self, "Down") # consider the cost later once implement that function
       
     def move_left(self):
         """
@@ -103,7 +104,7 @@ class PuzzleState(object):
         else:
             new_blank_tile_index = blank_tile_index - 1
             new_config[blank_tile_index], new_config[new_blank_tile_index] = new_config[new_blank_tile_index], new_config[blank_tile_index]
-            return PuzzleState(new_config, self.n, self, "Move Down") # consider the cost later once implement that function
+            return PuzzleState(new_config, self.n, self, "Left") # consider the cost later once implement that function
 
     def move_right(self):
         """
@@ -124,7 +125,7 @@ class PuzzleState(object):
         else:
             new_blank_tile_index = blank_tile_index + 1
             new_config[blank_tile_index], new_config[new_blank_tile_index] = new_config[new_blank_tile_index], new_config[blank_tile_index]
-            return PuzzleState(new_config, self.n, self, "Move Down") # consider the cost later once implement that function
+            return PuzzleState(new_config, self.n, self, "Right") # consider the cost later once implement that function
       
     def expand(self):
         """ Generate the child nodes of this node """
@@ -145,7 +146,6 @@ class PuzzleState(object):
         return self.children
 
 # Function that Writes to output.txt
-
 ### Students need to change the method to have the corresponding parameters
 def writeOutput():
     ### Student Code Goes here
@@ -162,31 +162,40 @@ def dfs_search(initial_state):
     pass
 
 def A_star_search(initial_state):
-    frontier = Q.PriorityQueue((0, initial_state))
+    # to ask TA: weird duplication because I don't want to modify the main function but I still need this stat, so this is here twice
+    start_time  = time.time()
+    frontier = Q.PriorityQueue((0, initial_state)) # okay so cost on state is g(n), and then generate tuple where key is h(n)
     explored = set()
+    nodes_expanded, max_search_depth = 0, 0
     while not frontier.empty():
         cost, state = frontier.get()
         explored.add(state)
-        if self.test_goal(state):
+        if test_goal(state):
+            path_to_goal, search_depth = calculate_path_to_goal_and_search_depth(state)
+            end_time = time.time()
+            writeOutput(path_to_goal, state.cost, nodes_expanded, search_depth, max_search_depth, 
+                        end_time-start_time, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss) # don't need a helper function (pass in params into output)
             return True
-        for neighbor in state.neighbors:
+        neighbors = state.expand()
+        for neighbor in neighbors:
             if neighbor not in explored and neighbor not in frontier:
+                nodes_expanded += 1
                 # duplicates will be distinguished by cost
                 # we ignore duplicates once we explored our designated
                 # min cost representation.
-                frontier.put((calculate_total_cost(neighbor), neighbor))
+                total_cost = calculate_total_cost(neighbor)
+                frontier.put((total_cost, neighbor)) #note make sure each of children have appropriate cost so far after- again what does cost here represent?
+        max_search_depth += 1 #make sure can test all of these in unit tests- or at least manually if too complicated
     return False
-        
 
 def calculate_total_cost(state):
-    """calculate the total estimated cost of a state"""
-    cost_so_far = state[0]
-    curr_state = state[1]
-    #manhattan_dist = calculate_manhattan_dist()
-    pass
+    total_manhattan_dist = 0
+    for index, value in enumerate(state):
+        tile_dist = calculate_manhattan_dist(index, value, None)
+        total_manhattan_dist += tile_dist
+    return state.cost + total_manhattan_dist
 
 def calculate_manhattan_dist(idx, value, n): # n isn't used in my implementation, but keeping it to avoid breaking autograder
-    """calculate the manhattan distance of a tile"""
     true_locs = {0: (0, 0), 1: (0, 1), 2: (0, 2), 
                       3: (1, 0), 4: (1, 1), 5: (1, 2),
                       6: (2, 0), 7: (2, 1), 8: (2, 2)}
@@ -208,6 +217,16 @@ def calculate_manhattan_dist(idx, value, n): # n isn't used in my implementation
 def test_goal(puzzle_state) -> bool:
     return puzzle_state == [0,1,2,3,4,5,6,7,8]
 
+
+def calculate_path_to_goal_and_search_depth(state):
+    curr_state = state
+    path, search_depth = [], 0
+    while curr_state.parent:
+        path.append(curr_state.action)
+        curr_state = curr_state.parent
+    return path, search_depth
+        
+    
 # Main Function that reads in Input and Runs corresponding Algorithm
 def main():
     search_mode = sys.argv[1].lower()
