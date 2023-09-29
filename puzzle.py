@@ -155,6 +155,7 @@ def writeOutput(path_to_goal, cost_of_path, nodes_expanded, search_depth,
                 max_search_depth, running_time, max_ram_usage):
     file = open("output.txt", "a")
     result_string = f'''path_to_goal: {path_to_goal}\n cost_of_path: {cost_of_path}\n nodes_expanded: {nodes_expanded}\n search_depth: {search_depth}\n max_search_depth: {max_search_depth}\n running_time: {running_time}\n max_ram_usage: {max_ram_usage}\n'''
+    print(result_string)
     file.write(result_string)
     file.close()
     
@@ -175,6 +176,7 @@ def uninformed_search(search_type, initial_state):
         state = frontier.get()
         state_config = tuple(state.config)
         explored.add(state_config)
+        #print(state_config)
         
         if test_goal(state):
             path_to_goal = calculate_path_to_goal(state)
@@ -184,6 +186,7 @@ def uninformed_search(search_type, initial_state):
         nodes_expanded += 1 # this is the right place to put this, right? Unit test/sanity check
         for child in children:
             child_config = tuple(child.config)
+            #print(child_config)
             if child_config not in explored:
                 frontier.put(child)
         # add one to include expanded children in the frontier that we may not dequeue before find the goal state.
@@ -210,7 +213,7 @@ def A_star_search(initial_state):
         if test_goal(state):
             path_to_goal = calculate_path_to_goal(state)
             return {'path': path_to_goal, 'path_cost': state.cost, 'nodes_expanded':
-                    nodes_expanded, 'depth': search_depth, 'max_depth': max_search_depth}
+                    nodes_expanded, 'depth': state.cost, 'max_depth': max_search_depth}
         children = state.expand()
         nodes_expanded += 1 # this is the right place to put this, right? Unit test/sanity check
         for child in children:
@@ -222,7 +225,8 @@ def A_star_search(initial_state):
                 estimated_total_cost = calculate_total_cost(child)
                 count += 1
                 frontier.put((estimated_total_cost, count, child))
-        max_search_depth += 1 #make sure can test all of these in unit tests- or at least manually if too complicated
+        # add one to include expanded children in the frontier that we may not dequeue before find the goal state.
+        max_search_depth = max(max_search_depth, state.cost+1 if children else state.cost) # the cost is the same as the search depth
     return None
 
 def calculate_total_cost(state):
