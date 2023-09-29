@@ -151,39 +151,12 @@ class PuzzleState(object):
 def writeOutput(path_to_goal, cost_of_path, nodes_expanded, search_depth, 
                 max_search_depth, running_time, max_ram_usage):
     file = open("output.txt", "a")
-    result_string = f'''path_to_goal: {path_to_goal}\n cost_of_path: {cost_of_path}\n
-                   nodes_expanded: {nodes_expanded}\n search_depth: {search_depth}\n
-                   max_search_depth: {max_search_depth}\n running_time: {running_time}\n
-                   max_ram_usage: {max_ram_usage}'''
+    result_string = f'''path_to_goal: {path_to_goal}\n cost_of_path: {cost_of_path}\n nodes_expanded: {nodes_expanded}\n search_depth: {search_depth}\n max_search_depth: {max_search_depth}\n running_time: {running_time}\n max_ram_usage: {max_ram_usage}\n'''
     file.write(result_string)
-    print(result_string)
     file.close()
     
 def bfs_search(initial_state):
-    frontier = Q.Queue()
-    frontier.put(initial_state)
-    
-    explored = set()
-    nodes_expanded, max_search_depth = 0, 0
-    while not frontier.empty():
-        state = frontier.get()
-        state_config = tuple(state.config)
-        #print(state_config)
-        explored.add(state_config)
-        #print(explored)
-        
-        if test_goal(state):
-            path_to_goal, search_depth = calculate_path_to_goal_and_search_depth(state)
-            return {'path': path_to_goal, 'path_cost': state.cost, 'nodes_expanded':
-                    nodes_expanded, 'depth': search_depth, 'max_depth': max_search_depth}
-        children = state.expand()
-        nodes_expanded += 1 # this is the right place to put this, right? Unit test/sanity check
-        for child in children:
-            child_config = tuple(child.config)
-            if child_config not in explored:
-                frontier.put(child)
-        max_search_depth += 1 #make sure can test all of these in unit tests- or at least manually if too complicated
-    return None
+    return uninformed_search(UninformedSearch.BFS, initial_state)
             
 
 def dfs_search(initial_state):

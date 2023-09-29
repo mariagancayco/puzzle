@@ -1,7 +1,20 @@
-from puzzle import PuzzleState, calculate_manhattan_dist
+from puzzle import PuzzleState, calculate_manhattan_dist, bfs_search
 import unittest
 
 class TestPuzzleMethods(unittest.TestCase):
+    """"
+    def test_bfs_search_medium_size_search(self):
+        expected_result = {'path': ['Down', 'Right', 'Up', 'Up', 'Left', 'Down', 'Right', 'Down', 'Left', 'Up', 'Left', 'Up', 'Right', 'Right', 'Down', 'Down', 'Left', 'Left', 'Up', 'Up'], 'path_cost': 20, 'nodes_expanded':
+                    54094, 'depth': 20, 'max_depth': 21}
+        result = bfs_search(PuzzleState([6,1,8,4,0,2,7,3,5], 3))
+        self.assertEqual(expected_result, result)
+        
+    def test_bfs_search_large_size_search(self):
+        expected_result = {'path': ['Left', 'Up', 'Up', 'Left', 'Down', 'Right', 'Down', 'Left', 'Up', 'Right', 'Right', 'Up', 'Left', 'Left', 'Down', 'Right', 'Right', 'Up', 'Left', 'Down', 'Down', 'Right', 'Up', 'Left', 'Up', 'Left'], 'path_cost': 26, 'nodes_expanded':
+                    166786, 'depth': 26, 'max_depth': 27}
+        result = bfs_search(PuzzleState([8,6,4,2,1,3,5,7,0], 3))
+        self.assertEqual(expected_result, result)
+"""
     def test_move_up_blank_in_first_row(self):
         initial = PuzzleState([0,1,2,3,4,5,6,7,8], 3)
         self.assertIsNone(initial.move_up())
