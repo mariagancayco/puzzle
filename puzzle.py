@@ -182,9 +182,23 @@ def bfs_search(initial_state):
             
 
 def dfs_search(initial_state):
-    """DFS search"""
-    ### STUDENT CODE GOES HERE ###
-    pass
+    nodes_expanded, max_search_depth, explored = 0, 0 , set()
+    return rec_dfs_search(initial_state, nodes_expanded, max_search_depth, explored)
+
+def rec_dfs_search(state, nodes_expanded, max_search_depth, explored):
+    explored.add(tuple(state.config))
+    if test_goal(state):
+        path_to_goal, search_depth = calculate_path_to_goal_and_search_depth(state)
+        return {'path': path_to_goal, 'path_cost': state.cost, 'nodes_expanded':
+                    nodes_expanded, 'depth': search_depth, 'max_depth': max_search_depth}
+    children = state.expand()
+    nodes_expanded += 1 # this is the right place to put this, right? Unit test/sanity check
+    for child in children:
+        if tuple(child.config) not in explored:
+            return rec_dfs_search(child, nodes_expanded, max_search_depth, explored)
+    max_search_depth += 1
+    return None
+        
 
 def A_star_search(initial_state):
     frontier = Q.PriorityQueue()
@@ -259,8 +273,13 @@ def calculate_path_to_goal_and_search_depth(state):
     path.reverse()
     return path, search_depth
         
-    
-# Main Function that reads in Input and Runs corresponding Algorithm
+def write_result_info(result_info, start_time):
+    if not result_info: return #figure out how to handle empty case- should just be the empty config? No solution vs. handed goal state?
+    end_time = time.time()
+    max_RAM = getrusage(RUSAGE_SELF).ru_maxrss
+    writeOutput(result_info['path'], result_info['path_cost'], result_info['nodes_expanded'],result_info['depth'], result_info['max_depth'], end_time-start_time, max_RAM)
+
+    # Main Function that reads in Input and Runs corresponding Algorithm
 def main():
     search_mode = sys.argv[1].lower()
     begin_state = sys.argv[2].split(",")
@@ -271,19 +290,13 @@ def main():
     
     if search_mode == "bfs":
         result_info = bfs_search(hard_state)
-        if not result_info: return #figure out how to handle empty case- should just be the empty config? No solution vs. handed goal state?
-        end_time = time.time()
-        max_RAM = getrusage(RUSAGE_SELF).ru_maxrss
-        writeOutput(result_info['path'], result_info['path_cost'], result_info['nodes_expanded'],
-                    result_info['depth'], result_info['max_depth'], end_time-start_time, max_RAM)
-    elif search_mode == "dfs": dfs_search(hard_state)
+        write_result_info(result_info, start_time)
+    elif search_mode == "dfs":
+        result_info = dfs_search(hard_state)
+        write_result_info(result_info, start_time)
     elif search_mode == "ast": 
         result_info = A_star_search(hard_state)
-        if not result_info: return #figure out how to handle empty case- should just be the empty config? No solution vs. handed goal state?
-        end_time = time.time()
-        max_RAM = getrusage(RUSAGE_SELF).ru_maxrss
-        writeOutput(result_info['path'], result_info['path_cost'], result_info['nodes_expanded'],
-                    result_info['depth'], result_info['max_depth'], end_time-start_time, max_RAM)
+        write_result_info(result_info, start_time)
     else: 
         print("Enter valid command arguments !")
 
