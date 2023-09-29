@@ -7,10 +7,12 @@ import sys
 import math
 import time
 import queue as Q
+from collections import defaultdict
 
-class UninformedSearch(Enum):
+class Search(Enum):
     BFS = 1
     DFS = 2
+    AST = 3
 
 #### SKELETON CODE ####
 ## The Class that Represents the Puzzle
@@ -149,8 +151,28 @@ class PuzzleState(object):
         self.children = [state for state in children if state is not None]
         return self.children
 
-# Function that Writes to output.txt
-### Students need to change the method to have the corresponding parameters
+class PuzzleStateFrontier(object):
+    def __init__(self, search_type):
+        if search_type == Search.BFS:
+            self.q = Q.Queue()
+        elif search_type == Search.DFS:
+            self.q = Q.LifoQueue()
+        else:
+            self.q  = Q.PriorityQueue()
+        self.states = defaultdict(bool) 
+        
+    def put(self, state):
+        self.q.put(state)
+        self.states[tuple(state.config)] = True
+    
+    def get(self):
+        item_to_return = self.q.get()
+        self.states[tuple(item_to_return.config)] = False
+        return item_to_return
+    
+    def empty(self):
+        return self.q.empty()
+    
 def writeOutput(path_to_goal, cost_of_path, nodes_expanded, search_depth, 
                 max_search_depth, running_time, max_ram_usage):
     file = open("output.txt", "a")
@@ -160,14 +182,14 @@ def writeOutput(path_to_goal, cost_of_path, nodes_expanded, search_depth,
     file.close()
     
 def bfs_search(initial_state):
-    return uninformed_search(UninformedSearch.BFS, initial_state)
+    return uninformed_search(Search.BFS, initial_state)
             
 
 def dfs_search(initial_state):
-    return uninformed_search(UninformedSearch.DFS, initial_state)
+    return uninformed_search(Search.DFS, initial_state)
 
 def uninformed_search(search_type, initial_state):
-    frontier = Q.Queue() if search_type == UninformedSearch.BFS else Q.LifoQueue()
+    frontier = PuzzleStateFrontier(search_type)
     frontier.put(initial_state)
     
     explored = set()
@@ -189,10 +211,10 @@ def uninformed_search(search_type, initial_state):
             child = children[index]
             child_config = tuple(child.config)
             #print(f"child state: {child_config}, action: {child.action}")
-            not_in_q = not any (child.config == x.config for x in frontier.queue)
+            in_q = frontier.states[child_config]
             #print(f"not_in_q: {not_in_q}")
-            if not_in_q and (child_config not in explored): # problem frontier will always fail because object equality- this proabbly also a problem for A*
-                if search_type == UninformedSearch.BFS:
+            if not in_q and (child_config not in explored): # problem frontier will always fail because object equality- this proabbly also a problem for A*
+                if search_type == Search.BFS:
                     frontier.put(child)
                 else:
                     ordered_children.append(child)
