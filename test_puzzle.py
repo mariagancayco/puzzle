@@ -1,20 +1,39 @@
-from puzzle import PuzzleState, calculate_manhattan_dist, bfs_search
+from puzzle import PuzzleState, calculate_manhattan_dist, bfs_search, dfs_search
 import unittest
 
 class TestPuzzleMethods(unittest.TestCase):
-    """"
-    def test_bfs_search_medium_size_search(self):
-        expected_result = {'path': ['Down', 'Right', 'Up', 'Up', 'Left', 'Down', 'Right', 'Down', 'Left', 'Up', 'Left', 'Up', 'Right', 'Right', 'Down', 'Down', 'Left', 'Left', 'Up', 'Up'], 'path_cost': 20, 'nodes_expanded':
-                    54094, 'depth': 20, 'max_depth': 21}
-        result = bfs_search(PuzzleState([6,1,8,4,0,2,7,3,5], 3))
-        self.assertEqual(expected_result, result)
-        
+#    maxDiff = None
+    """     
     def test_bfs_search_large_size_search(self):
         expected_result = {'path': ['Left', 'Up', 'Up', 'Left', 'Down', 'Right', 'Down', 'Left', 'Up', 'Right', 'Right', 'Up', 'Left', 'Left', 'Down', 'Right', 'Right', 'Up', 'Left', 'Down', 'Down', 'Right', 'Up', 'Left', 'Up', 'Left'], 'path_cost': 26, 'nodes_expanded':
                     166786, 'depth': 26, 'max_depth': 27}
         result = bfs_search(PuzzleState([8,6,4,2,1,3,5,7,0], 3))
-        self.assertEqual(expected_result, result)
-"""
+        assert_search_results(expected_result, result)
+    """
+        
+    def test_bfs_search_medium_size_search(self):
+        expected_result = {'path': ['Down', 'Right', 'Up', 'Up', 'Left', 'Down', 'Right', 'Down', 'Left', 'Up', 'Left', 'Up', 'Right', 'Right', 'Down', 'Down', 'Left', 'Left', 'Up', 'Up'], 'path_cost': 20, 'nodes_expanded':
+                    54094, 'depth': 20, 'max_depth': 21}
+        result = bfs_search(PuzzleState([6,1,8,4,0,2,7,3,5], 3))
+        self.assert_search_results(expected_result, result)
+        
+    def test_bfs_search_small_size_search(self):
+        expected_result = {'path': ['Up', 'Left', 'Left'], 'path_cost': 3, 'nodes_expanded': 10, 'depth': 3, 'max_depth': 4}
+        result = bfs_search(PuzzleState([1,2,5,3,4,0,6,7,8], 3))
+        self.assert_search_results(expected_result, result)
+        
+    def test_dfs_search_small_size_search(self):
+        expected_result = {'path': ['Up', 'Left', 'Left'], 'path_cost': 3, 'nodes_expanded': 181437, 'depth': 3, 'max_depth': 66125}
+        result = dfs_search(PuzzleState([1,2,5,3,4,0,6,7,8], 3))
+        self.assert_search_results(expected_result, result)
+
+    def assert_search_results(self, expected_result, result):
+        self.assertEqual(expected_result['path'], result['path'])
+        self.assertEqual(expected_result['path_cost'], result['path_cost'])
+        self.assertEqual(expected_result['nodes_expanded'], result['nodes_expanded'])
+        self.assertEqual(expected_result['depth'], result['depth'])
+        self.assertEqual(expected_result['max_depth'], result['max_depth'])
+        
     def test_move_up_blank_in_first_row(self):
         initial = PuzzleState([0,1,2,3,4,5,6,7,8], 3)
         self.assertIsNone(initial.move_up())
