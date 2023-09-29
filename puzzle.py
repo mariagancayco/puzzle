@@ -57,7 +57,7 @@ class PuzzleState(object):
         
         new_config = self.config.copy()
         if blank_tile_index < 3:
-            print("Unable to move up when blank tile in first row.")
+            #print("Unable to move up when blank tile in first row.")
             return
         else:
             new_blank_tile_index = blank_tile_index - 3
@@ -78,7 +78,7 @@ class PuzzleState(object):
         
         new_config = self.config.copy()
         if blank_tile_index > 5:
-            print("Unable to move down when blank tile in last row.")
+            #print("Unable to move down when blank tile in last row.")
             return
         else:
             new_blank_tile_index = blank_tile_index + 3
@@ -99,7 +99,7 @@ class PuzzleState(object):
         
         new_config = self.config.copy()
         if blank_tile_index % 3 == 0:
-            print("Unable to move left when blank tile in leftmost row.")
+            #print("Unable to move left when blank tile in leftmost row.")
             return
         else:
             new_blank_tile_index = blank_tile_index - 1
@@ -120,7 +120,7 @@ class PuzzleState(object):
         
         new_config = self.config.copy()
         if blank_tile_index % 3 == 2:
-            print("Unable to move right when blank tile in rightmost row.")
+            #print("Unable to move right when blank tile in rightmost row.")
             return
         else:
             new_blank_tile_index = blank_tile_index + 1
@@ -166,7 +166,10 @@ def bfs_search(initial_state):
     nodes_expanded, max_search_depth = 0, 0
     while not frontier.empty():
         state = frontier.get()
-        explored.add(state)
+        state_config = tuple(state.config)
+        #print(state_config)
+        explored.add(state_config)
+        #print(explored)
         
         if test_goal(state):
             path_to_goal, search_depth = calculate_path_to_goal_and_search_depth(state)
@@ -175,7 +178,8 @@ def bfs_search(initial_state):
         children = state.expand()
         nodes_expanded += 1 # this is the right place to put this, right? Unit test/sanity check
         for child in children:
-            if child not in explored:
+            child_config = tuple(child.config)
+            if child_config not in explored:
                 frontier.put(child)
         max_search_depth += 1 #make sure can test all of these in unit tests- or at least manually if too complicated
     return None
@@ -214,7 +218,7 @@ def A_star_search(initial_state):
     while not frontier.empty():
         state_info = frontier.get()
         state = state_info[2]
-        explored.add(state)
+        explored.add(tuple(state.config))
 
         if test_goal(state):
             path_to_goal, search_depth = calculate_path_to_goal_and_search_depth(state)
@@ -223,7 +227,8 @@ def A_star_search(initial_state):
         children = state.expand()
         nodes_expanded += 1 # this is the right place to put this, right? Unit test/sanity check
         for child in children:
-            if child not in explored:
+            child_config = tuple(child.config)
+            if child_config not in explored:
                 # duplicates will be distinguished by estimated cost
                 # we ignore duplicates once we explored our designated
                 # min cost representation.
