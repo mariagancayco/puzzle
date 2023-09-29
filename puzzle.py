@@ -62,7 +62,7 @@ class PuzzleState(object):
         else:
             new_blank_tile_index = blank_tile_index - 3
             new_config[blank_tile_index], new_config[new_blank_tile_index] = new_config[new_blank_tile_index], new_config[blank_tile_index]
-            return PuzzleState(new_config, self.n, self, "Up") # consider the cost later once implement that function
+            return PuzzleState(new_config, self.n, self, "Up", self.cost+1) # consider the cost later once implement that function
       
     def move_down(self):
         """
@@ -83,7 +83,7 @@ class PuzzleState(object):
         else:
             new_blank_tile_index = blank_tile_index + 3
             new_config[blank_tile_index], new_config[new_blank_tile_index] = new_config[new_blank_tile_index], new_config[blank_tile_index]
-            return PuzzleState(new_config, self.n, self, "Down") # consider the cost later once implement that function
+            return PuzzleState(new_config, self.n, self, "Down", self.cost+1) # consider the cost later once implement that function
       
     def move_left(self):
         """
@@ -104,7 +104,7 @@ class PuzzleState(object):
         else:
             new_blank_tile_index = blank_tile_index - 1
             new_config[blank_tile_index], new_config[new_blank_tile_index] = new_config[new_blank_tile_index], new_config[blank_tile_index]
-            return PuzzleState(new_config, self.n, self, "Left") # consider the cost later once implement that function
+            return PuzzleState(new_config, self.n, self, "Left", self.cost+1) # consider the cost later once implement that function
 
     def move_right(self):
         """
@@ -125,7 +125,7 @@ class PuzzleState(object):
         else:
             new_blank_tile_index = blank_tile_index + 1
             new_config[blank_tile_index], new_config[new_blank_tile_index] = new_config[new_blank_tile_index], new_config[blank_tile_index]
-            return PuzzleState(new_config, self.n, self, "Right") # consider the cost later once implement that function
+            return PuzzleState(new_config, self.n, self, "Right", self.cost+1) # consider the cost later once implement that function
       
     def expand(self):
         """ Generate the child nodes of this node """
@@ -167,9 +167,7 @@ def dfs_search(initial_state):
     pass
 
 def A_star_search(initial_state):
-    # to ask TA: weird duplication because I don't want to modify the main function but I still need this stat, so this is here twice
-    start_time  = time.time()
-    frontier = Q.PriorityQueue((0, initial_state)) # okay so cost on state is g(n), and then generate tuple where key is h(n)
+    frontier = Q.PriorityQueue((0, initial_state))
     explored = set()
     nodes_expanded, max_search_depth = 0, 0
     while not frontier.empty():
@@ -179,17 +177,17 @@ def A_star_search(initial_state):
             path_to_goal, search_depth = calculate_path_to_goal_and_search_depth(state)
             end_time = time.time()
             return {'path': path_to_goal, 'path_cost': state.cost, 'nodes_expanded':
-                    nodes_expanded, 'depth': search_depth, 'max_depth': max_search_depth} # don't need a helper function (pass in params into output)
+                    nodes_expanded, 'depth': search_depth, 'max_depth': max_search_depth}
             return True
         neighbors = state.expand()
         for neighbor in neighbors:
             if neighbor not in explored and neighbor not in frontier:
                 nodes_expanded += 1
-                # duplicates will be distinguished by cost
+                # duplicates will be distinguished by estimated cost
                 # we ignore duplicates once we explored our designated
                 # min cost representation.
-                total_cost = calculate_total_cost(neighbor)
-                frontier.put((total_cost, neighbor)) #note make sure each of children have appropriate cost so far after- again what does cost here represent?
+                estimated_total_cost = calculate_total_cost(neighbor)
+                frontier.put((estimated_total_cost, neighbor))
         max_search_depth += 1 #make sure can test all of these in unit tests- or at least manually if too complicated
     return None
 
