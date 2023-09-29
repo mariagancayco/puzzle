@@ -8,6 +8,9 @@ import math
 import time
 import queue as Q
 
+class UninformedSearch(Enum):
+    BFS = 1
+    DFS = 2
 
 #### SKELETON CODE ####
 ## The Class that Represents the Puzzle
@@ -162,10 +165,6 @@ def bfs_search(initial_state):
 def dfs_search(initial_state):
     return uninformed_search(UninformedSearch.DFS, initial_state)
 
-class UninformedSearch(Enum):
-    BFS = 1
-    DFS = 2
-
 def uninformed_search(search_type, initial_state):
     frontier = Q.Queue() if search_type == UninformedSearch.BFS else Q.LifoQueue()
     frontier.put(initial_state)
@@ -178,27 +177,27 @@ def uninformed_search(search_type, initial_state):
         explored.add(state_config)
         
         if test_goal(state):
-            #nuke search depth calculation because it's the same as the cost
-            path_to_goal, search_depth = calculate_path_to_goal_and_search_depth(state)
+            path_to_goal = calculate_path_to_goal(state)
             return {'path': path_to_goal, 'path_cost': state.cost, 'nodes_expanded':
-                    nodes_expanded, 'depth': search_depth, 'max_depth': max_search_depth}
+                    nodes_expanded, 'depth': state.cost, 'max_depth': max_search_depth}
         children = state.expand()
         nodes_expanded += 1 # this is the right place to put this, right? Unit test/sanity check
         for child in children:
             child_config = tuple(child.config)
             if child_config not in explored:
                 frontier.put(child)
-        max_search_depth = max(max_search_depth, state.cost) # the cost is the same as the search depth
+        # add one to include expanded children in the frontier that we may not dequeue before find the goal state.
+        max_search_depth = max(max_search_depth, state.cost+1 if children else state.cost) # the cost is the same as the search depth
     return None
         
 
 def A_star_search(initial_state):
-    frontier = Q.PriorityQueue()
     """
     According to the Python doc priority queue implementation, items with the same priority in a Tuple break comparison.
     Resolve this via the recommended solution which is to store an entry "count" item. Fall back to this to break priority
     ties.
     """
+    frontier = Q.PriorityQueue()
     count = 0
     frontier.put((0, count, initial_state))
     explored = set()
@@ -209,7 +208,7 @@ def A_star_search(initial_state):
         explored.add(tuple(state.config))
 
         if test_goal(state):
-            path_to_goal, search_depth = calculate_path_to_goal_and_search_depth(state)
+            path_to_goal = calculate_path_to_goal(state)
             return {'path': path_to_goal, 'path_cost': state.cost, 'nodes_expanded':
                     nodes_expanded, 'depth': search_depth, 'max_depth': max_search_depth}
         children = state.expand()
@@ -256,15 +255,14 @@ def test_goal(puzzle_state) -> bool:
     return puzzle_state.config == [0,1,2,3,4,5,6,7,8]
 
 
-def calculate_path_to_goal_and_search_depth(state):
+def calculate_path_to_goal(state):
     curr_state = state
-    path, search_depth = [], 0
+    path = []
     while curr_state.parent:
-        search_depth += 1
         path.append(curr_state.action)
         curr_state = curr_state.parent
     path.reverse()
-    return path, search_depth
+    return path
         
 def write_result_info(result_info, start_time):
     if not result_info: return #figure out how to handle empty case- should just be the empty config? No solution vs. handed goal state?
@@ -272,7 +270,7 @@ def write_result_info(result_info, start_time):
     max_RAM = getrusage(RUSAGE_SELF).ru_maxrss
     writeOutput(result_info['path'], result_info['path_cost'], result_info['nodes_expanded'],result_info['depth'], result_info['max_depth'], end_time-start_time, max_RAM)
 
-    # Main Function that reads in Input and Runs corresponding Algorithm
+# Main Function that reads in Input and Runs corresponding Algorithm
 def main():
     search_mode = sys.argv[1].lower()
     begin_state = sys.argv[2].split(",")
