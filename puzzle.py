@@ -176,8 +176,8 @@ def uninformed_search(search_type, initial_state):
         state = frontier.get()
         state_config = tuple(state.config)
         explored.add(state_config)
-        print(f"current state: {state_config}, action: {state.action}")
-        
+        #print(f"current state: {state_config}, action: {state.action}")
+        #if state.cost > 32: return None
         if test_goal(state):
             path_to_goal = calculate_path_to_goal(state)
             return {'path': path_to_goal, 'path_cost': state.cost, 'nodes_expanded':
@@ -188,8 +188,10 @@ def uninformed_search(search_type, initial_state):
         for index in range(len(children)):
             child = children[index]
             child_config = tuple(child.config)
-            print(f"child state: {child_config}, action: {child.action}")
-            if child_config not in explored and child not in frontier.queue: # problem frontier will always fail because object equality- this proabbly also a problem for A*
+            #print(f"child state: {child_config}, action: {child.action}")
+            not_in_q = not any (child.config == x.config for x in frontier.queue)
+            #print(f"not_in_q: {not_in_q}")
+            if not_in_q and (child_config not in explored): # problem frontier will always fail because object equality- this proabbly also a problem for A*
                 if search_type == UninformedSearch.BFS:
                     frontier.put(child)
                 else:
@@ -199,11 +201,12 @@ def uninformed_search(search_type, initial_state):
         ordered_children.reverse()
         for ordered_child in ordered_children:
             frontier.put(ordered_child)
-        for state in list(frontier.queue):
-            print(f"frontier state: {state.config}, action: {state.action}")
+        #for state in list(frontier.queue):
+           # print(f"frontier state: {state.config}, action: {state.action}")
         # add one to include expanded children in the frontier that we may not dequeue before find the goal state.
         max_search_depth = max(max_search_depth, state.cost+1 if children else state.cost) # the cost is the same as the search depth
-        print("------------------------------------------------------")
+        print(f"max_search_depth: {max_search_depth}")
+        #print("------------------------------------------------------")
     return None
         
 
