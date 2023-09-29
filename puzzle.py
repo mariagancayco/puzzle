@@ -149,7 +149,7 @@ class PuzzleState(object):
 ### Students need to change the method to have the corresponding parameters
 def writeOutput(path_to_goal, cost_of_path, nodes_expanded, search_depth, 
                 max_search_depth, running_time, max_ram_usage):
-    file = open("/tmp/output.txt", "a")
+    file = open("output.txt", "a")
     result_string = f'''path_to_goal: {path_to_goal}\n cost_of_path: {cost_of_path}\n
                    nodes_expanded: {nodes_expanded}\n search_depth: {search_depth}\n
                    max_search_depth: {max_search_depth}\n running_time: {running_time}\n
@@ -189,6 +189,7 @@ def dfs_search(initial_state):
     nodes_expanded, max_search_depth, explored = 0, 0 , set()
     return rec_dfs_search(initial_state, nodes_expanded, max_search_depth, explored)
 
+# fix by implementing iteratively
 def rec_dfs_search(state, nodes_expanded, max_search_depth, explored):
     explored.add(tuple(state.config))
     if test_goal(state):
