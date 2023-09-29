@@ -132,7 +132,7 @@ class TestPuzzleMethods(unittest.TestCase):
         index, value = 0, 2 # test needed right move
         self.assertEqual(calculate_manhattan_dist(index, value, None), 2)
         
-        index, value = 2, 8 # test needed up move
+        index, value = 8, 2 # test needed up move
         self.assertEqual(calculate_manhattan_dist(index, value, None), 2)
         
         index, value = 3, 6 # test needed down move
