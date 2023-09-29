@@ -147,9 +147,13 @@ class PuzzleState(object):
 
 # Function that Writes to output.txt
 ### Students need to change the method to have the corresponding parameters
-def writeOutput():
-    ### Student Code Goes here
-    pass
+def writeOutput(path_to_goal, cost_of_path, nodes_expanded, search_depth, 
+                max_search_depth, running_time, max_ram_usage)
+    file = open("output.txt", "a")
+    file.write(f'''path_to_goal: {path_to_goal}\n cost_of_path: {cost_of_path}\n
+                   nodes_expanded: {nodes_expanded}\n search_depth: {search_depth}\n
+                   max_search_depth: {max_search_depth}\n running_time: {running_time}\n
+                   max_ram_usage: {max_ram_usage}''')
 
 def bfs_search(initial_state):
     """BFS search"""
@@ -173,8 +177,8 @@ def A_star_search(initial_state):
         if test_goal(state):
             path_to_goal, search_depth = calculate_path_to_goal_and_search_depth(state)
             end_time = time.time()
-            writeOutput(path_to_goal, state.cost, nodes_expanded, search_depth, max_search_depth, 
-                        end_time-start_time, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss) # don't need a helper function (pass in params into output)
+            return {'path': path_to_goal, 'path_cost': state.cost, 'nodes_expanded':
+                    nodes_expanded, 'depth': search_depth, 'max_depth': max_search_depth} # don't need a helper function (pass in params into output)
             return True
         neighbors = state.expand()
         for neighbor in neighbors:
@@ -186,7 +190,7 @@ def A_star_search(initial_state):
                 total_cost = calculate_total_cost(neighbor)
                 frontier.put((total_cost, neighbor)) #note make sure each of children have appropriate cost so far after- again what does cost here represent?
         max_search_depth += 1 #make sure can test all of these in unit tests- or at least manually if too complicated
-    return False
+    return None
 
 def calculate_total_cost(state):
     total_manhattan_dist = 0
@@ -224,6 +228,7 @@ def calculate_path_to_goal_and_search_depth(state):
     while curr_state.parent:
         path.append(curr_state.action)
         curr_state = curr_state.parent
+    path.reverse()
     return path, search_depth
         
     
@@ -238,12 +243,14 @@ def main():
     
     if   search_mode == "bfs": bfs_search(hard_state)
     elif search_mode == "dfs": dfs_search(hard_state)
-    elif search_mode == "ast": A_star_search(hard_state)
+    elif search_mode == "ast": 
+        result_info = A_star_search(hard_state)
+        end_time = time.time()
+        max_RAM = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        writeOutput(result_info['path'], result_info['path_cost'], result_info['nodes_expanded'],
+                    result_info['depth'], result_info['max_depth'], end_time-start_time, max_RAM)
     else: 
         print("Enter valid command arguments !")
-        
-    end_time = time.time()
-    print("Program completed in %.3f second(s)"%(end_time-start_time))
 
 if __name__ == '__main__':
     main()
