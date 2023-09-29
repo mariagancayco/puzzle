@@ -2,6 +2,7 @@ from __future__ import division
 from __future__ import print_function
 from resource import getrusage, RUSAGE_SELF
 
+from enum import Enum
 import sys
 import math
 import time
@@ -149,7 +150,7 @@ class PuzzleState(object):
 ### Students need to change the method to have the corresponding parameters
 def writeOutput(path_to_goal, cost_of_path, nodes_expanded, search_depth, 
                 max_search_depth, running_time, max_ram_usage):
-    file = open("/tmp/output.txt", "a")
+    file = open("output.txt", "a")
     result_string = f'''path_to_goal: {path_to_goal}\n cost_of_path: {cost_of_path}\n
                    nodes_expanded: {nodes_expanded}\n search_depth: {search_depth}\n
                    max_search_depth: {max_search_depth}\n running_time: {running_time}\n
@@ -186,21 +187,35 @@ def bfs_search(initial_state):
             
 
 def dfs_search(initial_state):
-    nodes_expanded, max_search_depth, explored = 0, 0 , set()
-    return rec_dfs_search(initial_state, nodes_expanded, max_search_depth, explored)
+    return uninformed_search(UninformedSearch.DFS, initial_state)
 
-def rec_dfs_search(state, nodes_expanded, max_search_depth, explored):
-    explored.add(tuple(state.config))
-    if test_goal(state):
-        path_to_goal, search_depth = calculate_path_to_goal_and_search_depth(state)
-        return {'path': path_to_goal, 'path_cost': state.cost, 'nodes_expanded':
+class UninformedSearch(Enum):
+    BFS = 1
+    DFS = 2
+
+def uninformed_search(search_type, initial_state):
+    frontier = Q.Queue() if search_type == UninformedSearch.BFS else Q.LifoQueue()
+    frontier.put(initial_state)
+    
+    explored = set()
+    nodes_expanded, max_search_depth = 0, 0
+    while not frontier.empty():
+        state = frontier.get()
+        state_config = tuple(state.config)
+        explored.add(state_config)
+        
+        if test_goal(state):
+            #nuke search depth calculation because it's the same as the cost
+            path_to_goal, search_depth = calculate_path_to_goal_and_search_depth(state)
+            return {'path': path_to_goal, 'path_cost': state.cost, 'nodes_expanded':
                     nodes_expanded, 'depth': search_depth, 'max_depth': max_search_depth}
-    children = state.expand()
-    nodes_expanded += 1 # this is the right place to put this, right? Unit test/sanity check
-    for child in children:
-        if tuple(child.config) not in explored:
-            return rec_dfs_search(child, nodes_expanded, max_search_depth, explored)
-    max_search_depth += 1
+        children = state.expand()
+        nodes_expanded += 1 # this is the right place to put this, right? Unit test/sanity check
+        for child in children:
+            child_config = tuple(child.config)
+            if child_config not in explored:
+                frontier.put(child)
+        max_search_depth = max(max_search_depth, state.cost) # the cost is the same as the search depth
     return None
         
 
