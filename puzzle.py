@@ -211,7 +211,8 @@ def uninformed_search(search_type, initial_state):
                     nodes_expanded, 'depth': state.cost, 'max_depth': max_search_depth}
         children = state.expand()
         nodes_expanded += 1 # this is the right place to put this, right? Unit test/sanity check
-        ordered_children = [] 
+        ordered_children = []
+        did_queue_children = False
         for index in range(len(children)):
             child = children[index]
             child_config = tuple(child.config)
@@ -221,13 +222,14 @@ def uninformed_search(search_type, initial_state):
                     frontier.put(child)
                 else:
                     ordered_children.append(child)
+                did_queue_children = True
         
         # For DFS, maintain UDLR order to stay consistent
         ordered_children.reverse()
         for ordered_child in ordered_children:
             frontier.put(ordered_child)
         # add one to include expanded children in the frontier that we may not dequeue before find the goal state.
-        max_search_depth = max(max_search_depth, state.cost+1 if children else state.cost) # the cost is the same as the search depth
+        max_search_depth = max(max_search_depth, state.cost+1 if did_queue_children else state.cost) # the cost is the same as the search depth
         
 
 def A_star_search(initial_state):
@@ -239,6 +241,7 @@ def A_star_search(initial_state):
     frontier = PuzzleStateFrontier(Search.AST)
     count = 0
     frontier.put((0, count, initial_state))
+    
     explored = set()
     nodes_expanded, max_search_depth = 0, 0
     while not frontier.empty():
@@ -252,6 +255,7 @@ def A_star_search(initial_state):
                     nodes_expanded, 'depth': state.cost, 'max_depth': max_search_depth}
         children = state.expand()
         nodes_expanded += 1 # this is the right place to put this, right? Unit test/sanity check
+        did_queue_children = False
         for child in children:
             child_config = tuple(child.config)
             in_q = frontier.states[child_config]
@@ -262,9 +266,10 @@ def A_star_search(initial_state):
                 estimated_total_cost = calculate_total_cost(child)
                 count += 1
                 frontier.put((estimated_total_cost, count, child))
+                did_queue_children = True
                          
         # add one to include expanded children in the frontier that we may not dequeue before find the goal state.
-        max_search_depth = max(max_search_depth, state.cost+1 if children else state.cost) # the cost is the same as the search depth
+        max_search_depth = max(max_search_depth, state.cost+1 if did_queue_children else state.cost) # the cost is the same as the search depth
     return None
 
 def calculate_total_cost(state):
