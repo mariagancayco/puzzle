@@ -153,7 +153,8 @@ class PuzzleState(object):
 
 class PuzzleStateFrontier(object):
     def __init__(self, search_type):
-        if search_type == Search.BFS:
+        self._search_type = search_type
+        if self._search_type == Search.BFS:
             self.q = Q.Queue()
         elif search_type == Search.DFS:
             self.q = Q.LifoQueue()
@@ -163,11 +164,17 @@ class PuzzleStateFrontier(object):
         
     def put(self, state):
         self.q.put(state)
-        self.states[tuple(state.config)] = True
+        if self._search_type == Search.AST:
+            self.states[tuple(state[2].config)] = True
+        else:
+            self.states[tuple(state.config)] = True
     
     def get(self):
         item_to_return = self.q.get()
-        self.states[tuple(item_to_return.config)] = False
+        if self._search_type == Search.AST:
+            self.states[tuple(item_to_return[2].config)] = False
+        else:
+            self.states[tuple(item_to_return.config)] = False
         return item_to_return
     
     def empty(self):
@@ -227,7 +234,6 @@ def uninformed_search(search_type, initial_state):
            # print(f"frontier state: {state.config}, action: {state.action}")
         # add one to include expanded children in the frontier that we may not dequeue before find the goal state.
         max_search_depth = max(max_search_depth, state.cost+1 if children else state.cost) # the cost is the same as the search depth
-        print(f"max_search_depth: {max_search_depth}")
         #print("------------------------------------------------------")
     return None
         
@@ -238,7 +244,7 @@ def A_star_search(initial_state):
     Resolve this via the recommended solution which is to store an entry "count" item. Fall back to this to break priority
     ties.
     """
-    frontier = Q.PriorityQueue()
+    frontier = PuzzleStateFrontier(Search.AST)
     count = 0
     frontier.put((0, count, initial_state))
     explored = set()
