@@ -50,7 +50,7 @@ class TestPuzzleMethods(unittest.TestCase):
         if check_path:
             self.assertEqual(expected_result['path'], result['path'])
         self.assertEqual(expected_result['path_cost'], result['path_cost'])
-        #self.assertEqual(expected_result['nodes_expanded'], result['nodes_expanded'])
+        self.assertEqual(expected_result['nodes_expanded'], result['nodes_expanded'])
         #self.assertEqual(expected_result['depth'], result['depth'])
         #self.assertEqual(expected_result['max_depth'], result['max_depth'])
         
