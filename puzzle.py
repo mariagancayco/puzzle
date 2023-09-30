@@ -254,21 +254,26 @@ def A_star_search(initial_state):
             return {'path': path_to_goal, 'path_cost': state.cost, 'nodes_expanded':
                     nodes_expanded, 'depth': state.cost, 'max_depth': max_search_depth}
         children = state.expand()
-        nodes_expanded += 1 # this is the right place to put this, right? Unit test/sanity check
+        nodes_expanded += 1 
         did_queue_children = False
         for child in children:
             child_config = tuple(child.config)
-            in_q = frontier.states[child_config]
-            if not in_q and (child_config not in explored):
-                # duplicates will be distinguished by estimated cost
-                # we ignore duplicates once we explored our designated
-                # min cost representation.
-                estimated_total_cost = calculate_total_cost(child)
-                count += 1
-                frontier.put((estimated_total_cost, count, child))
-                did_queue_children = True
-                         
-        # add one to include expanded children in the frontier that we may not dequeue before find the goal state.
+            in_frontier = frontier.states[child_config]
+            # we may have duplicates in our frontier since 1) the same configuration can have multiple visits
+            # and priorities and 2) in this implementation, we don't remove duplicates. We just ignore them
+            # once we dequeue the variant with the min cost.
+            if child_config not in explored: # check since we may have duplicates in our frontier
+                if not in_frontier:
+                    estimated_total_cost = calculate_total_cost(child)
+                    count += 1
+                    frontier.put((estimated_total_cost, count, child))
+                    did_queue_children = True
+                else:
+                    # duplicates will be distinguished by estimated cost
+                    # and we ignore higher cost duplicates.
+                    count += 1
+                    frontier.put((estimated_total_cost, count, child))           
+        # add one to include expanded children in the frontier that we may not dequeue before finding the goal state.
         max_search_depth = max(max_search_depth, state.cost+1 if did_queue_children else state.cost) # the cost is the same as the search depth
     return None
 
