@@ -47,12 +47,13 @@ class TestPuzzleMethods(unittest.TestCase):
         self.assert_search_results(expected_result, result)
 
     def assert_search_results(self, expected_result, result, check_path=True):
-        #if check_path:
-         #   self.assertEqual(expected_result['path'], result['path'])
-        #self.assertEqual(expected_result['path_cost'], result['path_cost'])
+        if check_path:
+            self.assertEqual(expected_result['path'], result['path'])
+        self.assertEqual(expected_result['path_cost'], result['path_cost'])
         # nodes_expanded is wrong for AST
-        #self.assertEqual(expected_result['nodes_expanded'], result['nodes_expanded'])
-        #self.assertEqual(expected_result['depth'], result['depth'])
+        self.assertEqual(expected_result['nodes_expanded'], result['nodes_expanded'])
+        self.assertEqual(expected_result['depth'], result['depth'])
+        # max_depth is wrong for DFS small search size
         self.assertEqual(expected_result['max_depth'], result['max_depth'])
         
     def test_move_up_blank_in_first_row(self):
