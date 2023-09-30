@@ -254,7 +254,8 @@ def A_star_search(initial_state):
         nodes_expanded += 1 # this is the right place to put this, right? Unit test/sanity check
         for child in children:
             child_config = tuple(child.config)
-            if child_config not in explored:
+            in_q = frontier.states[child_config]
+            if not in_q and (child_config not in explored):
                 # duplicates will be distinguished by estimated cost
                 # we ignore duplicates once we explored our designated
                 # min cost representation.
